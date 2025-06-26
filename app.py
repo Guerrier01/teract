@@ -1,10 +1,3 @@
-# app.py ────────────────────────────────────────────────────────────────
-# Streamlit • Générateur Marketing IA – Teract Corporate Edition
-# -----------------------------------------------------------------------
-# pip install streamlit openai python-dotenv pandas tiktoken openpyxl
-# (xlwt optionnel : pip install xlwt==1.3.0 si Python ≤3.11)
-# -----------------------------------------------------------------------
-
 import sys, importlib.util
 from datetime import datetime
 from io import BytesIO
@@ -13,23 +6,21 @@ import streamlit as st
 
 # Modules internes
 from style import apply_style
-import settings                   # charge & valide les clés Azure
+import settings
 from columns import BASE_COLUMNS, IA_COLUMNS
 from data_io import read_file
 from st_utils import preview_df
 from llm_utils import build_user_prompt, call_llm
 
-# ───────────────────────────────────
-# 0. STYLE CORPORATE (CSS + Fonts)
-# ───────────────────────────────────
-apply_style()   # doit précéder tout composant Streamlit
+# STYLE CORPORATE (CSS + Fonts)
 
-# ───────────────────────────────────
-# 4. UI PRINCIPALE
-# ───────────────────────────────────
-st.markdown("### Chargez votre fichier Teract")
+apply_style()
+
+# UI PRINCIPALE
+
+st.markdown("### Générateur de fiches marketing IA – Teract")
 uploaded = st.file_uploader(
-    "Formats acceptés : xls, xlsm, xlsx, csv",
+    "Chargez votre fichier aux formats acceptés : xls, xlsm, xlsx, csv",
     type=["xls", "xlsm", "xlsx", "csv"],
 )
 
