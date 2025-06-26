@@ -1,17 +1,11 @@
-# llm_utils.py ──────────────────────────────────────────────────────────
-"""
-Construction du prompt utilisateur + appel Azure OpenAI
-(via client défini dans settings.py).
-"""
-
 import re, time
 from settings import client, DEPLOYMENT, TEMPERATURE, MAX_RETRIES
 from prompts import SYSTEM_PROMPT
 
 
-# ───────────────────────────────────
-# 1. Prompt USER
-# ───────────────────────────────────
+
+# Prompt USER
+
 def build_user_prompt(row) -> str:
     """Construit le prompt USER à partir d'une ligne de DataFrame."""
     designation = str(row.get("Désignation produit Marketing Client", "")).strip()
@@ -31,9 +25,8 @@ def build_user_prompt(row) -> str:
     )
 
 
-# ───────────────────────────────────
-# 2. Appel LLM
-# ───────────────────────────────────
+# Appel LLM
+
 def call_llm(prompt: str) -> dict:
     """
     Appelle Azure OpenAI et renvoie un dict :
