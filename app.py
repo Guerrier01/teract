@@ -33,7 +33,7 @@ if uploaded:
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
             st.markdown(
-                f"<div class='error-msg'>❌ Colonnes manquantes : {', '.join(missing)}</div>",
+                f"<div class='error-msg'> Colonnes manquantes : {', '.join(missing)}</div>",
                 unsafe_allow_html=True,
             )
             st.stop()
@@ -44,7 +44,7 @@ if uploaded:
                 df[col] = ""
 
         st.markdown(
-            "<div class='success-msg'>✅ Fichier conforme.</div>",
+            "<div class='success-msg'> Fichier conforme.</div>",
             unsafe_allow_html=True,
         )
         preview_df(df, "Aperçu du fichier d’entrée", "input_preview")
@@ -100,7 +100,7 @@ if uploaded:
         df.to_excel(buf, index=False, engine=eng)
         buf.seek(0)
         fname = f"catalogue_enrichi_{datetime.now():%Y%m%d_%H%M}{ext}"
-        st.download_button("💾 Télécharger le fichier", buf, file_name=fname, mime=mime)
+        st.download_button(" Télécharger le fichier", buf, file_name=fname, mime=mime)
 
         # Détail des erreurs
         with st.expander("Détails des erreurs"):
