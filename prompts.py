@@ -1,4 +1,4 @@
-# prompts.py ────────────────────────────────────────────────────────────
+# prompts.py
 SYSTEM_PROMPT = """
 Tu es un copywriter senior spécialisé jardin, décoration et animalerie.
 Tu fournis :
