@@ -1,4 +1,3 @@
-# columns.py ────────────────────────────────────────────────────────────
 BASE_COLUMNS = [
     "Action","Type","ID","Name","Nomenclature IVR","ID Regroupement",
     "Nomenclature Jardiland","Nomenclature Jardiland.com","Nomenclature Gammvert",
