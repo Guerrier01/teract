@@ -1,9 +1,3 @@
-# app.py ────────────────────────────────────────────────────────────────
-# Streamlit • Générateur Marketing IA – Teract Corporate Edition
-# -----------------------------------------------------------------------
-# pip install -r requirements.txt
-# -----------------------------------------------------------------------
-
 import sys, importlib.util
 from datetime import datetime
 from io import BytesIO
@@ -11,15 +5,14 @@ from io import BytesIO
 import pandas as pd
 import streamlit as st
 
-# Modules internes
 from style import apply_style
-import settings                              # Azure (et SMTP, même si non utilisé ici)
+import settings
 from columns import BASE_COLUMNS, IA_COLUMNS
 from data_io import read_file
 from st_utils import preview_df
 from llm_utils import build_user_prompt, call_llm
 from docs import GUIDE_MD
-# import notify                              # ← notification désactivée pour l’instant
+# import notify   # notification désactivée
 
 # ───────────────────────────────────
 # 0. Style global
@@ -33,7 +26,7 @@ if "show_doc" not in st.session_state:
     st.session_state["show_doc"] = False
 
 
-def _toggle_doc():
+def _toggle_doc():  # inverse l’état
     st.session_state["show_doc"] = not st.session_state["show_doc"]
 
 
@@ -52,10 +45,9 @@ uploaded = st.file_uploader(
 )
 
 if uploaded:
-    # Lecture & validation
     try:
         df, workbook, groups_row = read_file(uploaded)
-        df.columns = [c.replace("/", " ") for c in df.columns]  # normalise '/'
+        df.columns = [c.replace("/", " ") for c in df.columns]
 
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
@@ -65,7 +57,6 @@ if uploaded:
             )
             st.stop()
 
-        # Ajout colonnes IA si absentes
         for col in IA_COLUMNS:
             df.setdefault(col, "")
 
@@ -73,7 +64,7 @@ if uploaded:
             "<div class='success-msg'>✅ Fichier conforme.</div>",
             unsafe_allow_html=True,
         )
-        preview_df(df, "Aperçu de la feuille Antitis", "input_preview")
+        preview_df(df, "Aperçu de la feuille Entities", "input_preview")
 
     except Exception as err:
         st.markdown(
@@ -83,37 +74,33 @@ if uploaded:
         st.stop()
 
     # ───────────────────────────────────
-    # 3. Lancement génération
+    # 3. Génération IA
     # ───────────────────────────────────
     if st.button("🚀 Lancer la génération IA"):
-        total        = len(df)
-        errors       = 0
-        total_tokens = 0
-
+        total, errors, total_tokens = len(df), 0, 0
         progress_bar = st.progress(0)
-        counter_ph   = st.empty()
+        counter_ph = st.empty()
 
-        for start in range(0, total, 10):                 # lots de 10
+        for start in range(0, total, 10):
             end = min(start + 10, total)
-
             for i in range(start, end):
                 row = df.iloc[i]
                 try:
                     r = call_llm(build_user_prompt(row))
                     df.at[i, "Description Marketing Client 1"] = r["desc"]
-                    df.at[i, "Plus produit 1"]                = r["plus1"]
-                    df.at[i, "Plus produit 2"]                = r["plus2"]
-                    df.at[i, "Plus produit 3"]                = r["plus3"]
+                    df.at[i, "Plus produit 1"] = r["plus1"]
+                    df.at[i, "Plus produit 2"] = r["plus2"]
+                    df.at[i, "Plus produit 3"] = r["plus3"]
                     df.at[i, "IA DATA"] = 1
-                    df.at[i, "Token"]   = r["tokens"]
-                    df.at[i, "Date"]    = datetime.now().strftime("%d/%m/%Y %H:%M")
-                    df.at[i, "IAPLUS"]  = 1
+                    df.at[i, "Token"] = r["tokens"]
+                    df.at[i, "Date"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+                    df.at[i, "IAPLUS"] = 1
                     df.at[i, "Commentaires"] = ""
                     total_tokens += r["tokens"]
                 except Exception as e:
                     errors += 1
                     df.at[i, "IA DATA"] = 0
-                    df.at[i, "IAPLUS"]  = 0
+                    df.at[i, "IAPLUS"] = 0
                     df.at[i, "Commentaires"] = str(e)[:250]
 
             processed = end
@@ -131,13 +118,9 @@ if uploaded:
         st.success(f"Génération terminée : {ok_lines} lignes OK, {errors} erreurs.")
         preview_df(df, "Aperçu de la feuille enrichie", "output_preview")
 
-        # ───────────────────────────────────
-        # 4. Reconstruction classeur & export
-        # ───────────────────────────────────
+        # ───── 4. Export
         buf = BytesIO()
-
-        if workbook is None:
-            # CSV ou Excel simple
+        if workbook is None:  # CSV ou Excel simple
             has_xlwt = importlib.util.find_spec("xlwt") and sys.version_info < (3, 12)
             eng, ext, mime = (
                 ("xlwt", ".xls", "application/vnd.ms-excel")
@@ -149,22 +132,19 @@ if uploaded:
                 )
             )
             df.to_excel(buf, index=False, engine=eng)
-        else:
-            # Classeur multi-feuilles : on reconstruit Antitis (+2 lignes header)
+        else:  # classeur multi-feuilles
             header_row = df.columns.tolist()
             groups_row_extended = groups_row + [""] * (len(header_row) - len(groups_row))
             top_df = pd.DataFrame([groups_row_extended, header_row])
-            out_sheet = pd.concat([top_df, df], ignore_index=True)
-
-            workbook["Antitis"] = out_sheet  # remplace la feuille Antitis
+            workbook["Entities"] = pd.concat([top_df, df], ignore_index=True)
 
             with pd.ExcelWriter(buf, engine="openpyxl") as writer:
-                for sheet_name, sheet_df in workbook.items():
+                for sheet, sheet_df in workbook.items():
                     sheet_df.to_excel(
                         writer,
-                        sheet_name=sheet_name,
+                        sheet_name=sheet,
                         index=False,
-                        header=False if sheet_name == "Antitis" else True,
+                        header=False if sheet == "Entities" else True,
                     )
 
             ext = ".xlsx"
@@ -174,14 +154,13 @@ if uploaded:
         fname = f"catalogue_enrichi_{datetime.now():%Y%m%d_%H%M}{ext}"
         st.download_button("💾 Télécharger le fichier", buf, file_name=fname, mime=mime)
 
-        # Détails erreurs
         with st.expander("Détails des erreurs"):
             err_df = df[df["IA DATA"] == 0][BASE_COLUMNS + IA_COLUMNS]
             st.write("Aucune." if err_df.empty else "")
             if not err_df.empty:
                 st.dataframe(err_df, use_container_width=True)
 
-        # Notification e-mail désactivée pour le moment
+        # Notification mail désactivée
         # notify.send_report(total, ok_lines, errors, total_tokens)
 
 else:
