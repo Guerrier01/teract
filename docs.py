@@ -1,6 +1,6 @@
 # docs.py ───────────────────────────────────────────────────────────────
 """
-Guide utilisateur (markdown) – incluant cas multi-feuilles & Antitis.
+Guide utilisateur – version feuille **Entities**.
 """
 
 GUIDE_MD = """
@@ -9,10 +9,10 @@ GUIDE_MD = """
 ### 1. Fichiers acceptés
 | Type | Extensions | Particularités |
 |------|------------|----------------|
-| **CSV** | `.csv` | Encoding UTF-8 recommandé. Séparateur `,` ou `;` détecté automatiquement. |
-| **Excel** | `.xls`, `.xlsm`, `.xlsx` | • Un onglet **ou** plusieurs.<br>• Si plusieurs : la feuille **Antitis** est obligatoirement présente.<br>• Les autres feuilles sont conservées telles quelles à l’export. |
+| **CSV**   | `.csv` | Encodage UTF-8 recommandé. Séparateur `,` ou `;` détecté automatiquement. |
+| **Excel** | `.xls`, `.xlsm`, `.xlsx` | • Un onglet **ou** plusieurs.<br>• Si plusieurs : la feuille **Entities** doit exister.<br>• Les autres feuilles sont conservées telles quelles à l’export. |
 
-### 2. Structure attendue de la feuille **Antitis**
+### 2. Structure attendue de la feuille **Entities**
 - **Ligne 1** : groupes d’attributs (laissée intacte).  
 - **Ligne 2** : noms exacts des colonnes (voir liste obligatoire ci-dessous).  
 - **Ligne 3+** : données produits.
@@ -24,21 +24,17 @@ GUIDE_MD = """
 `Code fournisseur`, `MDM ID`, `Code Unique`, `MDM Name`,  
 `Désignation produit Marketing Client`.
 
-Les colonnes IA manquantes (`Description Marketing Client 1`, `Plus produit 1…`)  
-sont créées automatiquement lors du traitement.
-
 ### 4. Procédure
 1. Chargez votre fichier.  
-2. Vérifiez l’aperçu de la feuille Antitis.  
+2. Vérifiez l’aperçu de la feuille **Entities**.  
 3. Cliquez **🚀 Lancer la génération IA** et suivez la progression (lots de 10).  
-4. Téléchargez le fichier enrichi : il contient les mêmes feuilles + Antitis complétée.  
+4. Téléchargez le fichier enrichi : mêmes feuilles + Entities complétée.  
 
 ### 5. Erreurs courantes
 | Message | Cause | Solution |
 |---------|-------|----------|
-| `Feuille « Antitis » absente` | Classeur multi-onglets sans Antitis | Renommez / ajoutez la feuille. |
-| `Colonnes manquantes` | Orthographe ou colonne omise | Corrigez puis relancez. |
-| `Format de sortie inattendu` | Réponse GPT incorrecte | Relancez la ligne ou contactez le support. |
+| `Feuille « Entities » absente` | Classeur sans onglet Entities | Renommez / ajoutez la feuille. |
+| `Colonnes manquantes` | Colonne obligatoire manquante | Corrigez puis relancez. |
 
-_Fermez ce guide via le même bouton pour continuer votre travail._
+_Fermez ce guide pour continuer votre travail._
 """
