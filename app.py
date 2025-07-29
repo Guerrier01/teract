@@ -16,7 +16,7 @@ from data_io import read_file
 from st_utils import preview_df
 from llm_utils import build_user_prompt, call_llm
 from docs import GUIDE_MD
-# import notify    # notification désactivée
+# import notify   # notification e-mail désactivée
 
 # ───────────────────────────────────
 # 0. Style global
@@ -50,16 +50,15 @@ uploaded = st.file_uploader(
 
 if uploaded:
     try:
-        # ----- Lecture classeur / CSV
+        # Lecture (CSV / Excel mono ou multi-feuilles)
         df, workbook, groups_row = read_file(uploaded)
 
-        # ----- Normalisation des en-têtes
-        # 1) remplace '/' par espace
-        # 2) condense les espaces multiples → un seul
-        # 3) strip début / fin
-        df.columns = [re.sub(r"\s+", " ", c.replace("/", " ")).strip() for c in df.columns]
+        # Normalisation des intitulés de colonnes
+        df.columns = [
+            re.sub(r"\s+", " ", c.replace("/", " ")).strip() for c in df.columns
+        ]
 
-        # ----- Validation colonnes obligatoires
+        # Vérification colonnes obligatoires
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
             st.markdown(
@@ -68,9 +67,10 @@ if uploaded:
             )
             st.stop()
 
-        # Ajout colonnes IA manquantes
+        # Ajout des colonnes IA manquantes (← correctif)
         for col in IA_COLUMNS:
-            df.setdefault(col, "")
+            if col not in df.columns:
+                df[col] = ""
 
         st.markdown(
             "<div class='success-msg'>✅ Fichier conforme.</div>",
