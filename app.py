@@ -1,3 +1,9 @@
+# app.py ────────────────────────────────────────────────────────────────
+# Streamlit • Générateur Marketing IA – Teract Corporate Edition
+# -----------------------------------------------------------------------
+# pip install -r requirements.txt
+# -----------------------------------------------------------------------
+
 import sys, importlib.util
 from datetime import datetime
 from io import BytesIO
@@ -7,16 +13,22 @@ import streamlit as st
 
 # Modules internes
 from style import apply_style
-import settings                            # Azure & SMTP
+import settings                              # Azure (et SMTP, même si non utilisé ici)
 from columns import BASE_COLUMNS, IA_COLUMNS
 from data_io import read_file
 from st_utils import preview_df
 from llm_utils import build_user_prompt, call_llm
 from docs import GUIDE_MD
-import notify
+# import notify                              # ← notification désactivée pour l’instant
 
+# ───────────────────────────────────
+# 0. Style global
+# ───────────────────────────────────
 apply_style()
 
+# ───────────────────────────────────
+# 1. Sidebar : Guide utilisateur
+# ───────────────────────────────────
 if "show_doc" not in st.session_state:
     st.session_state["show_doc"] = False
 
@@ -43,7 +55,7 @@ if uploaded:
     # Lecture & validation
     try:
         df, workbook, groups_row = read_file(uploaded)
-        df.columns = [c.replace("/", " ") for c in df.columns]   # normalise '/'
+        df.columns = [c.replace("/", " ") for c in df.columns]  # normalise '/'
 
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
@@ -81,7 +93,7 @@ if uploaded:
         progress_bar = st.progress(0)
         counter_ph   = st.empty()
 
-        for start in range(0, total, 10):           # lots de 10
+        for start in range(0, total, 10):                 # lots de 10
             end = min(start + 10, total)
 
             for i in range(start, end):
@@ -138,14 +150,14 @@ if uploaded:
             )
             df.to_excel(buf, index=False, engine=eng)
         else:
-            # Classeur multi-feuilles : on reconstruit Antitis (2 lignes header)
+            # Classeur multi-feuilles : on reconstruit Antitis (+2 lignes header)
             header_row = df.columns.tolist()
             groups_row_extended = groups_row + [""] * (len(header_row) - len(groups_row))
             top_df = pd.DataFrame([groups_row_extended, header_row])
             out_sheet = pd.concat([top_df, df], ignore_index=True)
 
-            # Remplace la feuille puis ré-écrit toutes les autres intactes
-            workbook["Antitis"] = out_sheet
+            workbook["Antitis"] = out_sheet  # remplace la feuille Antitis
+
             with pd.ExcelWriter(buf, engine="openpyxl") as writer:
                 for sheet_name, sheet_df in workbook.items():
                     sheet_df.to_excel(
@@ -169,8 +181,8 @@ if uploaded:
             if not err_df.empty:
                 st.dataframe(err_df, use_container_width=True)
 
-        # Notification e-mail
-        notify.send_report(total, ok_lines, errors, total_tokens)
+        # Notification e-mail désactivée pour le moment
+        # notify.send_report(total, ok_lines, errors, total_tokens)
 
 else:
     st.info("Déposez un fichier pour commencer.")
