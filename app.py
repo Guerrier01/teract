@@ -1,6 +1,7 @@
 import sys, importlib.util
 from datetime import datetime
 from io import BytesIO
+import re
 
 import pandas as pd
 import streamlit as st
@@ -47,7 +48,10 @@ uploaded = st.file_uploader(
 if uploaded:
     try:
         df, workbook, groups_row = read_file(uploaded)
-        df.columns = [c.replace("/", " ") for c in df.columns]
+        df.columns = [ 
+            re.sub(r"\s+", " ", c.replace("/", " ")).strip()
+            for c in df.columns
+        ]
 
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
