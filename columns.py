@@ -3,7 +3,7 @@ BASE_COLUMNS = [
     "Nomenclature Jardiland","Nomenclature Jardiland.com","Nomenclature Gammvert",
     "Nomenclature Nalod's","Nomenclature IVR web","Nomenclature Utilisateurs",
     "Code fournisseur","MDM ID","Code Unique","MDM Name",
-    "Désignation produit Marketing / Client",
+    "Désignation produit Marketing Client",
 ]
 
 IA_COLUMNS = [
