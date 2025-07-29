@@ -1,7 +1,10 @@
-import sys, importlib.util
+# app.py ────────────────────────────────────────────────────────────────
+# Streamlit • Générateur Marketing IA – Teract Corporate Edition
+# -----------------------------------------------------------------------
+
+import sys, importlib.util, re
 from datetime import datetime
 from io import BytesIO
-import re
 
 import pandas as pd
 import streamlit as st
@@ -13,7 +16,7 @@ from data_io import read_file
 from st_utils import preview_df
 from llm_utils import build_user_prompt, call_llm
 from docs import GUIDE_MD
-# import notify   # notification désactivée
+# import notify    # notification désactivée
 
 # ───────────────────────────────────
 # 0. Style global
@@ -27,7 +30,7 @@ if "show_doc" not in st.session_state:
     st.session_state["show_doc"] = False
 
 
-def _toggle_doc():  # inverse l’état
+def _toggle_doc():
     st.session_state["show_doc"] = not st.session_state["show_doc"]
 
 
@@ -47,12 +50,16 @@ uploaded = st.file_uploader(
 
 if uploaded:
     try:
+        # ----- Lecture classeur / CSV
         df, workbook, groups_row = read_file(uploaded)
-        df.columns = [ 
-            re.sub(r"\s+", " ", c.replace("/", " ")).strip()
-            for c in df.columns
-        ]
 
+        # ----- Normalisation des en-têtes
+        # 1) remplace '/' par espace
+        # 2) condense les espaces multiples → un seul
+        # 3) strip début / fin
+        df.columns = [re.sub(r"\s+", " ", c.replace("/", " ")).strip() for c in df.columns]
+
+        # ----- Validation colonnes obligatoires
         missing = [c for c in BASE_COLUMNS if c not in df.columns]
         if missing:
             st.markdown(
@@ -61,6 +68,7 @@ if uploaded:
             )
             st.stop()
 
+        # Ajout colonnes IA manquantes
         for col in IA_COLUMNS:
             df.setdefault(col, "")
 
@@ -158,14 +166,14 @@ if uploaded:
         fname = f"catalogue_enrichi_{datetime.now():%Y%m%d_%H%M}{ext}"
         st.download_button("💾 Télécharger le fichier", buf, file_name=fname, mime=mime)
 
+        # Détails erreurs
         with st.expander("Détails des erreurs"):
             err_df = df[df["IA DATA"] == 0][BASE_COLUMNS + IA_COLUMNS]
             st.write("Aucune." if err_df.empty else "")
             if not err_df.empty:
                 st.dataframe(err_df, use_container_width=True)
 
-        # Notification mail désactivée
-        # notify.send_report(total, ok_lines, errors, total_tokens)
+        # notify.send_report(total, ok_lines, errors, total_tokens)  # e-mail inactif
 
 else:
     st.info("Déposez un fichier pour commencer.")
